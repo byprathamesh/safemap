@@ -36,7 +36,7 @@ npm run build
 # 4. Deploy to Vercel (one command!)
 npx vercel --prod
 
-# ✅ Your web app is live at: https://safemap-webapp.vercel.app
+# ✅ Your prototype is live at: https://safemap-prototype.vercel.app
 ```
 
 ### **🖥️ Deploy Dashboard to Netlify (FREE)**
@@ -231,10 +231,12 @@ railway variables set NODE_ENV=production
 
 ## 🔗 **Connecting Everything**
 
-### **Update Web App Config**
+### **Update Web Prototype Config**
 ```bash
-# webapp/.env.local
-NEXT_PUBLIC_API_URL=http://localhost:3000
+# Clone prototype repo and configure
+git clone https://github.com/byprathamesh/safemapprototye.git
+cd safemapprototye
+echo "NEXT_PUBLIC_API_URL=http://localhost:3000" > .env.local
 # or for Railway: https://your-app.railway.app
 ```
 
@@ -252,10 +254,10 @@ REACT_APP_API_URL=http://localhost:3000
 After deployment, you'll have:
 
 ```
-🌐 Web App:     https://safemap-webapp.vercel.app
-🖥️ Dashboard:   https://safemap-dashboard.netlify.app  
-🔗 Backend:     http://localhost:3000 (or Railway URL)
-📚 Docs:        https://byprathamesh.github.io/safemap
+🌐 Web Prototype: https://safemap-prototype.vercel.app (separate repo)
+🖥️ Dashboard:     https://safemap-dashboard.netlify.app  
+🔗 Backend:       http://localhost:3000 (or Railway URL)
+📚 Docs:          https://byprathamesh.github.io/safemap
 ```
 
 ---
@@ -345,7 +347,7 @@ cd ../backend && npm install && npm run dev
 
 ### **Test Emergency Flow:**
 ```bash
-# 1. Open web app: https://your-webapp.vercel.app
+# 1. Open prototype: https://your-prototype.vercel.app
 # 2. Click panic button
 # 3. See alerts in dashboard: https://your-dashboard.netlify.app
 # 4. All working without spending anything!

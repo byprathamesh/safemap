@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "🛡️  SafeMap FREE Demo Launcher"
-echo "=================================="
+echo "🛡️  SafeMap Production Demo Launcher"
+echo "====================================="
 echo ""
 
 # Check if Node.js is installed
@@ -54,28 +54,6 @@ echo "✅ Backend started (PID: $BACKEND_PID)"
 # Wait for backend to start
 sleep 5
 
-# Start webapp
-echo ""
-echo "🌐 Starting Web App..."
-cd ../webapp
-if [ ! -f ".env.local" ]; then
-    echo "Creating web app environment file..."
-    cat > .env.local << EOL
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_SOCKET_URL=http://localhost:3000
-EOL
-fi
-
-if [ ! -d "node_modules" ]; then
-    echo "Installing web app dependencies..."
-    npm install
-fi
-
-echo "Starting web app..."
-npm run dev &
-WEBAPP_PID=$!
-echo "✅ Web App started (PID: $WEBAPP_PID)"
-
 # Start dashboard
 echo ""
 echo "🖥️  Starting Dashboard..."
@@ -99,31 +77,34 @@ DASHBOARD_PID=$!
 echo "✅ Dashboard started (PID: $DASHBOARD_PID)"
 
 echo ""
-echo "🎉 SafeMap FREE Demo is now running!"
-echo "=================================="
+echo "🎉 SafeMap Production Demo is now running!"
+echo "========================================="
 echo ""
-echo "📱 Web App (Users):      http://localhost:3002"
 echo "🖥️  Dashboard (Admin):    http://localhost:3001"  
 echo "🔗 Backend API:          http://localhost:3000"
 echo ""
+echo "🌐 For Web App (Users):"
+echo "📱 Web Prototype Repository: https://github.com/byprathamesh/safemapprototye.git"
+echo "   Clone and run: git clone https://github.com/byprathamesh/safemapprototye.git"
+echo "                  cd safemapprototye && npm install && npm run dev"
+echo ""
 echo "🧪 Test Emergency Flow:"
-echo "1. Open Web App: http://localhost:3002"
-echo "2. Click the red PANIC BUTTON"
-echo "3. Watch emergency in Dashboard: http://localhost:3001"
+echo "1. Open Dashboard: http://localhost:3001"
+echo "2. Deploy web prototype separately for user interface"
+echo "3. Watch emergency monitoring in dashboard"
 echo ""
 echo "⚡ Features Available:"
-echo "• Panic button emergency activation"
-echo "• Real-time location sharing" 
-echo "• Emergency contact notifications"
-echo "• Voice commands (say 'Help Me')"
-echo "• Stealth mode for discrete operation"
-echo "• Live emergency monitoring"
+echo "• Backend API for emergency processing"
+echo "• Real-time dashboard monitoring"
+echo "• Emergency response coordination"
+echo "• Database with emergency logs"
+echo "• Indian carrier integration ready"
 echo ""
 echo "🔧 To stop all services:"
-echo "kill $BACKEND_PID $WEBAPP_PID $DASHBOARD_PID"
+echo "kill $BACKEND_PID $DASHBOARD_PID"
 echo ""
 echo "📚 Deployment Guide: See FREE-DEPLOYMENT.md"
-echo "🌍 Deploy to Vercel/Netlify for public access"
+echo "🌍 Deploy dashboard to Netlify, backend to Railway"
 echo ""
 echo "Press Ctrl+C to stop all services"
 
@@ -132,7 +113,6 @@ cleanup() {
     echo ""
     echo "🛑 Stopping SafeMap services..."
     kill $BACKEND_PID 2>/dev/null
-    kill $WEBAPP_PID 2>/dev/null  
     kill $DASHBOARD_PID 2>/dev/null
     echo "✅ All services stopped"
     exit 0

@@ -1,7 +1,7 @@
 {
   "name": "safemap",
   "version": "1.0.0",
-  "description": "Industry-grade women's safety platform for India",
+  "description": "Industry-grade women's safety platform for India - Complete production system",
   "main": "index.js",
   "private": true,
   "workspaces": [
@@ -36,7 +36,7 @@
     "deploy:backend:production": "cd backend && npm run deploy:production",
     "deploy:dashboard:staging": "cd dashboard && npm run deploy:staging",
     "deploy:dashboard:production": "cd dashboard && npm run deploy:production",
-    "lint": "npm run lint:backend && npm run lint:dashboard",
+    "lint": "npm run lint:backend && npm run lint:dashboard && npm run lint:mobile",
     "lint:backend": "cd backend && npm run lint",
     "lint:dashboard": "cd dashboard && npm run lint",
     "lint:mobile": "cd mobile && flutter analyze",
@@ -46,19 +46,23 @@
     "docs:generate": "cd docs && npm run generate",
     "emergency:simulate": "cd scripts && node simulate-emergency.js",
     "carriers:test": "cd scripts && node test-carriers.js",
-    "compliance:check": "cd scripts && node compliance-check.js"
+    "compliance:check": "cd scripts && node compliance-check.js",
+    "demo:start": "bash scripts/start-free-demo.sh",
+    "prototype:link": "echo 'Web prototype: https://github.com/byprathamesh/safemapprototye.git'"
   },
   "keywords": [
     "women-safety",
-    "emergency",
+    "emergency-response",
     "india",
     "mobile-app",
     "location-tracking",
-    "emergency-response",
-    "safety",
-    "security"
+    "safety-platform",
+    "security",
+    "emergency-services",
+    "112-india",
+    "carrier-integration"
   ],
-  "author": "Safe Map Team",
+  "author": "Prathamesh Bhere <byprathamesh>",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -88,10 +92,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/safemap/safemap.git"
+    "url": "https://github.com/byprathamesh/safemap.git"
   },
   "bugs": {
-    "url": "https://github.com/safemap/safemap/issues"
+    "url": "https://github.com/byprathamesh/safemap/issues"
   },
-  "homepage": "https://safemap.in"
+  "homepage": "https://github.com/byprathamesh/safemap#readme",
+  "relatedRepositories": {
+    "prototype": "https://github.com/byprathamesh/safemapprototye.git"
+  }
 } 
