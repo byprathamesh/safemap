@@ -1,0 +1,263 @@
+name: SafeMap CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  FLUTTER_VERSION: '3.10.0'
+
+jobs:
+  # Backend Tests
+  backend-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: safemap_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: backend
+      run: npm ci
+
+    - name: Generate Prisma client
+      working-directory: backend
+      run: npx prisma generate
+      env:
+        DATABASE_URL: postgresql://postgres:test_password@localhost:5432/safemap_test
+
+    - name: Run database migrations
+      working-directory: backend
+      run: npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://postgres:test_password@localhost:5432/safemap_test
+
+    - name: Run linting
+      working-directory: backend
+      run: npm run lint
+
+    - name: Run type checking
+      working-directory: backend
+      run: npm run type-check
+
+    - name: Run tests
+      working-directory: backend
+      run: npm test
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgresql://postgres:test_password@localhost:5432/safemap_test
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test_jwt_secret
+        ENCRYPTION_KEY: test_encryption_key_32_chars_long
+
+    - name: Run test coverage
+      working-directory: backend
+      run: npm run test:coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: backend/coverage/lcov.info
+        flags: backend
+
+  # Mobile Tests
+  mobile-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        
+    - name: Install dependencies
+      working-directory: mobile
+      run: flutter pub get
+      
+    - name: Analyze code
+      working-directory: mobile
+      run: flutter analyze
+      
+    - name: Run tests
+      working-directory: mobile
+      run: flutter test --coverage
+      
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: mobile/coverage/lcov.info
+        flags: mobile
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'SafeMap'
+        path: '.'
+        format: 'ALL'
+
+  # Build and Deploy
+  build-deploy:
+    needs: [backend-test, mobile-test, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Build backend
+      working-directory: backend
+      run: |
+        npm ci
+        npm run build
+        
+    - name: Build Docker image
+      run: |
+        docker build -t safemap-backend:${{ github.sha }} .
+        docker tag safemap-backend:${{ github.sha }} safemap-backend:latest
+        
+    - name: Login to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Push Docker image
+      run: |
+        docker tag safemap-backend:latest ghcr.io/${{ github.repository }}/safemap-backend:latest
+        docker tag safemap-backend:latest ghcr.io/${{ github.repository }}/safemap-backend:${{ github.sha }}
+        docker push ghcr.io/${{ github.repository }}/safemap-backend:latest
+        docker push ghcr.io/${{ github.repository }}/safemap-backend:${{ github.sha }}
+
+    # Deploy to staging
+    - name: Deploy to Staging
+      if: github.ref == 'refs/heads/develop'
+      run: |
+        echo "Deploying to staging environment..."
+        # Add staging deployment steps here
+        
+    # Deploy to production
+    - name: Deploy to Production
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Deploying to production environment..."
+        # Add production deployment steps here
+
+  # Mobile Build
+  mobile-build:
+    needs: [mobile-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+        
+    - name: Install dependencies
+      working-directory: mobile
+      run: flutter pub get
+      
+    - name: Build APK
+      working-directory: mobile
+      run: flutter build apk --release
+      
+    - name: Build App Bundle
+      working-directory: mobile
+      run: flutter build appbundle --release
+      
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: mobile/build/app/outputs/flutter-apk/app-release.apk
+        
+    - name: Upload App Bundle artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-aab
+        path: mobile/build/app/outputs/bundle/release/app-release.aab
+
+  # Notification
+  notify:
+    needs: [build-deploy, mobile-build]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify team
+      run: |
+        if [ "${{ needs.build-deploy.result }}" == "success" ] && [ "${{ needs.mobile-build.result }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+        fi 

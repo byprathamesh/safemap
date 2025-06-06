@@ -1,0 +1,61 @@
+MIT License
+
+Copyright (c) 2024 SafeMap - India's Premier Women's Safety Platform
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third Party Licenses
+
+This project includes components with the following licenses:
+
+### Backend Dependencies
+- Express.js - MIT License
+- Socket.IO - MIT License
+- Prisma - Apache 2.0 License
+- TypeScript - Apache 2.0 License
+
+### Mobile Dependencies
+- Flutter - BSD 3-Clause License
+- Various Flutter packages - See pubspec.yaml for individual licenses
+
+### Dashboard Dependencies
+- React - MIT License
+- Next.js - MIT License
+- Chakra UI - MIT License
+
+### Indian Carrier Integration
+This software integrates with Indian telecommunications carriers (Jio, Airtel, VI, BSNL) 
+through their respective APIs. Use of carrier APIs is subject to their individual terms 
+of service and API agreements.
+
+### Emergency Services Integration
+Integration with 112 India Emergency Response System is subject to government regulations 
+and licensing requirements as per Indian IT Act 2000 and TRAI guidelines.
+
+---
+
+## Important Notice
+
+This software is designed for emergency response and women's safety. While we strive 
+for reliability, users should not rely solely on this software for emergency situations. 
+Always contact local emergency services directly in case of immediate danger.
+
+In India: Call 112 for emergencies 

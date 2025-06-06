@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  phoneNumber       String   @unique
+  email             String?  @unique
+  name              String
+  emergencyContacts Json     // Array of emergency contacts
+  preferences       Json     // User preferences and settings
+  deviceInfo        Json     // Device and location settings
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  emergencies  Emergency[]
+  locations    UserLocation[]
+  safezones    SafeZone[]
+  reports      IncidentReport[]
+  subscriptions CarrierSubscription[]
+
+  @@map("users")
+}
+
+model Emergency {
+  id              String        @id @default(cuid())
+  userId          String
+  type            EmergencyType
+  status          EmergencyStatus
+  priority        Priority      @default(HIGH)
+  triggerMethod   String        // USSD, PANIC_BUTTON, VOICE, etc.
+  location        Json          // Current location data
+  evidence        Json          // Audio/video/image URLs
+  description     String?
+  responseTime    DateTime?     // When first responder acknowledged
+  resolvedAt      DateTime?
+  metadata        Json          // Additional emergency data
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  user            User          @relation(fields: [userId], references: [id])
+  responses       EmergencyResponse[]
+  notifications   Notification[]
+  timeline        EmergencyTimeline[]
+
+  @@map("emergencies")
+}
+
+model EmergencyResponse {
+  id              String   @id @default(cuid())
+  emergencyId     String
+  responderId     String   // Police/NGO/Contact ID
+  responderType   String   // POLICE, NGO, EMERGENCY_CONTACT
+  status          String   // DISPATCHED, ARRIVED, RESOLVED
+  estimatedArrival DateTime?
+  actualArrival   DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  emergency       Emergency @relation(fields: [emergencyId], references: [id])
+
+  @@map("emergency_responses")
+}
+
+model EmergencyTimeline {
+  id          String   @id @default(cuid())
+  emergencyId String
+  event       String   // Event description
+  timestamp   DateTime @default(now())
+  data        Json?    // Additional event data
+
+  // Relations
+  emergency   Emergency @relation(fields: [emergencyId], references: [id])
+
+  @@map("emergency_timeline")
+}
+
+model UserLocation {
+  id          String   @id @default(cuid())
+  userId      String
+  latitude    Float
+  longitude   Float
+  accuracy    Float?
+  speed       Float?
+  heading     Float?
+  altitude    Float?
+  timestamp   DateTime @default(now())
+  isEmergency Boolean  @default(false)
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("user_locations")
+}
+
+model SafeZone {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  latitude    Float
+  longitude   Float
+  radius      Float    // In meters
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("safe_zones")
+}
+
+model IncidentReport {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String   // HARASSMENT, STALKING, UNSAFE_AREA, etc.
+  location      Json     // Location where incident occurred
+  description   String
+  evidence      Json?    // Photos, videos, audio
+  isAnonymous   Boolean  @default(false)
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@map("incident_reports")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  emergencyId String?
+  type        String   // SMS, WHATSAPP, VOICE_CALL, PUSH
+  recipient   String   // Phone number or identifier
+  content     String
+  status      String   // PENDING, SENT, DELIVERED, FAILED
+  attempts    Int      @default(0)
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  emergency   Emergency? @relation(fields: [emergencyId], references: [id])
+
+  @@map("notifications")
+}
+
+model CarrierSubscription {
+  id          String   @id @default(cuid())
+  userId      String
+  carrier     String   // JIO, AIRTEL, VI, BSNL
+  serviceType String   // USSD, SMS, LOCATION
+  isActive    Boolean  @default(true)
+  metadata    Json?    // Carrier-specific data
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("carrier_subscriptions")
+}
+
+model HeatmapData {
+  id        String   @id @default(cuid())
+  latitude  Float
+  longitude Float
+  type      String   // INCIDENT, EMERGENCY, SAFE_ZONE
+  severity  Int      // 1-10 scale
+  count     Int      @default(1)
+  date      DateTime
+  createdAt DateTime @default(now())
+
+  @@map("heatmap_data")
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // INFO, WARN, ERROR, CRITICAL
+  service   String   // Service name
+  message   String
+  data      Json?
+  userId    String?
+  timestamp DateTime @default(now())
+
+  @@map("system_logs")
+}
+
+// Enums
+enum EmergencyType {
+  PERSONAL_SAFETY
+  MEDICAL
+  FIRE
+  ACCIDENT
+  HARASSMENT
+  STALKING
+  DOMESTIC_VIOLENCE
+  GENERAL
+}
+
+enum EmergencyStatus {
+  ACTIVE
+  RESPONDED
+  RESOLVED
+  FALSE_ALARM
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+} 
