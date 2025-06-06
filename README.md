@@ -235,7 +235,7 @@ Authorization: Bearer your_jio_api_key
 
 ### Project Structure
 ```
-safemap/
+safemap/               # Complete production platform
 ├── backend/           # Node.js API server
 ├── mobile/           # Flutter mobile app
 ├── dashboard/        # React admin dashboard
@@ -244,6 +244,10 @@ safemap/
 ├── infrastructure/   # Docker, K8s, configs
 └── shared/          # Common types & utilities
 ```
+
+### Related Repositories
+- **[SafeMap Web Prototype](https://github.com/byprathamesh/safemapprototye)** - Quick demo/testing web version
+- **This Repository** - Complete production platform
 
 ### Development Commands
 ```bash
